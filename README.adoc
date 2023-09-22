@@ -1,0 +1,3 @@
+= Demo Structured Concurrency with Quarkus
+
+TODO: The Docker base images are not yet available for Java 21
