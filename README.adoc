@@ -1,3 +1,6 @@
 = Demo Structured Concurrency with Quarkus
 
-TODO: The Docker base images are not yet available for Java 21
+As of `2023-09-22`:
+
+* The GitHub Action still fails, as `temurin-21` is not available, yet.
+* The Docker base images are not available for Java 21, yet.
