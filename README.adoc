@@ -1,4 +1,4 @@
-= Demo Structured Concurrency with Quarkus
+= Demo Structured Concurrency with Quarkus image:https://github.com/t1/quarkus-structured-concurrency-demo/actions/workflows/maven.yml/badge.svg[link=https://github.com/t1/quarkus-structured-concurrency-demo/actions/workflows/maven.yml]
 
 As of `2023-09-22`:
 
