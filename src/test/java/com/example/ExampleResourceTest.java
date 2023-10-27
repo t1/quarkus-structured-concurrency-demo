@@ -45,6 +45,7 @@ public class ExampleResourceTest {
     }
 
     @Test
+    // this test gets slower when testManyHellos already brings the service to the limits
     // @Timeout(value = 1_999, unit = MILLISECONDS) // must be faster than two seconds
     public void testHelloEndpoint() {
         var hello = api.hello(-1);

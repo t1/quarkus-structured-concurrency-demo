@@ -1,6 +1,10 @@
 = Demo Structured Concurrency with Quarkus image:https://github.com/t1/quarkus-structured-concurrency-demo/actions/workflows/maven.yml/badge.svg[link=https://github.com/t1/quarkus-structured-concurrency-demo/actions/workflows/maven.yml]
 
-As of `2023-09-22`:
+Shows how you can use Structured Concurrency in a Quarkus application as well as in tests.
 
-* The GitHub Action still fails, as `temurin-21` is not available, yet.
+
+==== Notes
+
+As of `2023-10-27`:
+
 * The Docker base images are not available for Java 21, yet.
