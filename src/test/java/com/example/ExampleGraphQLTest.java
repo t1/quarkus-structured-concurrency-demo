@@ -8,10 +8,11 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static java.util.concurrent.StructuredTaskScope.Subtask;
+import static java.util.concurrent.StructuredTaskScope.open;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @QuarkusTest
@@ -57,14 +58,14 @@ public class ExampleGraphQLTest {
     public void testManyHellos() throws Exception {
         var n = 10;
         var counter = new AtomicInteger();
-        try (var scope = new java.util.concurrent.StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = open()) {
             var tasks = IntStream.range(0, n)
                     .mapToObj(i -> scope.fork(() -> api.hello(i)))
                     .toList();
 
-            scope.joinUntil(Instant.now().plusSeconds(30)).throwIfFailed();
+            scope.join();
 
-            tasks.stream().map(java.util.concurrent.StructuredTaskScope.Subtask::get).forEach(text -> {
+            tasks.stream().map(Subtask::get).forEach(text -> {
                 counter.incrementAndGet();
                 then(text).isEqualTo("Hello, World");
             });

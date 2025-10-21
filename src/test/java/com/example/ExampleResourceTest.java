@@ -2,13 +2,18 @@ package com.example;
 
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.StructuredTaskScope.Joiner;
+import java.util.concurrent.StructuredTaskScope.Subtask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -57,17 +62,18 @@ public class ExampleResourceTest {
     public void testManyHellos() throws Exception {
         var n = 100;
         var counter = new AtomicInteger();
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            var tasks = IntStream.range(0, n)
-                    .mapToObj(i -> scope.fork(() -> api.hello(i)))
-                    .toList();
+        try (var scope = StructuredTaskScope.open(Joiner.<String>allSuccessfulOrThrow())) {
+            for (int i = 0; i < n; i++) {
+                int x = i;
+                scope.fork(() -> api.hello(x));
+            }
 
-            scope.joinUntil(Instant.now().plusSeconds(30)).throwIfFailed();
-
-            tasks.stream().map(StructuredTaskScope.Subtask::get).forEach(text -> {
-                counter.incrementAndGet();
-                then(text).isEqualTo("Hello, World");
-            });
+            scope.join()
+                    .map(Subtask::get)
+                    .forEach(text -> {
+                        counter.incrementAndGet();
+                        then(text).isEqualTo("Hello, World");
+                    });
         }
 
         then(counter.get()).isEqualTo(n);
@@ -77,14 +83,14 @@ public class ExampleResourceTest {
     public void testManySleeps() throws Exception {
         var n = 1_000_000;
         var counter = new AtomicInteger();
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.open()) {
             var tasks = IntStream.range(0, n)
                     .mapToObj(i -> scope.fork(() -> afterDelayReturn(i)))
                     .toList();
 
-            scope.joinUntil(Instant.now().plusSeconds(30)).throwIfFailed();
+            scope.join();//Until(Instant.now().plusSeconds(30)).throwIfFailed();
 
-            tasks.stream().map(StructuredTaskScope.Subtask::get).forEach(ignored -> counter.incrementAndGet());
+            tasks.stream().map(Subtask::get).forEach(ignored -> counter.incrementAndGet());
         }
 
         then(counter.get()).isEqualTo(n);

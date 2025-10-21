@@ -2,14 +2,18 @@ package com.example;
 
 import io.smallrye.common.annotation.RunOnVirtualThread;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,13 +34,13 @@ public class ExampleResource {
 
     @GET @Path("/hello")
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(@QueryParam("n") Integer n) throws InterruptedException, ExecutionException {
+    public String hello(@QueryParam("n") Integer n) throws InterruptedException {
         log.info("start hello {} [#{}]", n, parallel.incrementAndGet());
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.open()) {
             var hello = scope.fork(() -> api.part(1, n));
             var world = scope.fork(() -> api.part(2, n));
 
-            scope.join().throwIfFailed();
+            scope.join();
 
             return hello.get() + ", " + world.get();
         } finally {
