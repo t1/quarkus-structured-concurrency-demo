@@ -1,6 +1,8 @@
 package com.example;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.concurrent.StructuredTaskScope;
@@ -10,13 +12,14 @@ import java.util.concurrent.StructuredTaskScope.TimeoutException;
 import static org.assertj.core.api.BDDAssertions.fail;
 
 class TimeoutTest {
-    @Test
-    void shouldTimeOut() throws InterruptedException {
+    private static final Logger log = LoggerFactory.getLogger(TimeoutTest.class);
+
+    @Test void shouldTimeOut() throws InterruptedException {
         try (var scope = StructuredTaskScope.open(
                 Joiner.allSuccessfulOrThrow(),
                 config -> config.withTimeout(Duration.ofMillis(10)))) {
-            scope.fork(() -> System.out.println("one"));
-            scope.fork(() -> System.out.println("two"));
+            scope.fork(() -> log.info("one"));
+            scope.fork(() -> log.info("two"));
             scope.fork(() -> {
                 Thread.sleep(100);
                 return 1; // make this lambda a Callable (not a Runnable), so it can throw an exception
@@ -26,7 +29,11 @@ class TimeoutTest {
 
             fail("this should not be reached");
         } catch (TimeoutException e) {
-            System.out.println("this is fine");
+            log.info("this is fine");
         }
+    }
+
+    @Test void shouldUseStackWalker() {
+        StackWalker.getInstance().forEach(frame -> log.info("{}", frame));
     }
 }
